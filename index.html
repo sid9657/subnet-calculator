@@ -1,1 +1,132 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Advanced Subnet Calculator</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 30px; }
+    input, button { padding: 8px; margin: 5px; }
+    .box { margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<h2>🔥 Advanced Subnet Calculator</h2>
+
+<input type="text" id="ip" placeholder="IP (192.168.1.0)">
+<input type="number" id="cidr" placeholder="/24">
+<button onclick="calculate()">Calculate</button>
+
+<div class="box">
+  <p><b>Class:</b> <span id="class"></span></p>
+  <p><b>Subnet Mask:</b> <span id="mask"></span></p>
+  <p><b>Network ID:</b> <span id="network"></span></p>
+  <p><b>Broadcast:</b> <span id="broadcast"></span></p>
+  <p><b>Usable Range:</b> <span id="range"></span></p>
+  <p><b>Total Hosts:</b> <span id="hosts"></span></p>
+  <p><b>Subnets:</b> <span id="subnets"></span></p>
+</div>
+
+<hr>
+
+<h3>🧠 Practice Mode</h3>
+<button onclick="generateQuestion()">Generate Question</button>
+<p id="question"></p>
+
+<input type="text" id="answer" placeholder="Your Answer">
+<button onclick="checkAnswer()">Check</button>
+
+<p id="result"></p>
+
+<script>
+function getClass(ip) {
+  let first = parseInt(ip.split('.')[0]);
+  if (first <= 127) return "A";
+  if (first <= 191) return "B";
+  if (first <= 223) return "C";
+  return "Other";
+}
+
+function cidrToMask(cidr) {
+  let mask = [];
+  for (let i = 0; i < 4; i++) {
+    let n = Math.min(8, cidr);
+    mask.push(256 - Math.pow(2, 8 - n));
+    cidr -= n;
+  }
+  return mask.join(".");
+}
+
+function ipToInt(ip) {
+  return ip.split('.').reduce((acc, octet) =>
+    (acc << 8) + parseInt(octet), 0) >>> 0;
+}
+
+function intToIp(int) {
+  return [(int >>> 24), (int >> 16 & 255), (int >> 8 & 255), (int & 255)].join('.');
+}
+
+function calculate() {
+  let ip = document.getElementById("ip").value;
+  let cidr = parseInt(document.getElementById("cidr").value);
+
+  let mask = cidrToMask(cidr);
+  document.getElementById("mask").innerText = mask;
+
+  document.getElementById("class").innerText = getClass(ip);
+
+  let ipInt = ipToInt(ip);
+  let maskInt = ipToInt(mask);
+
+  let network = ipInt & maskInt;
+  let broadcast = network | (~maskInt >>> 0);
+
+  let firstIP = network + 1;
+  let lastIP = broadcast - 1;
+
+  document.getElementById("network").innerText = intToIp(network);
+  document.getElementById("broadcast").innerText = intToIp(broadcast);
+  document.getElementById("range").innerText =
+    intToIp(firstIP) + " - " + intToIp(lastIP);
+
+  let hostBits = 32 - cidr;
+  let totalHosts = Math.pow(2, hostBits) - 2;
+  document.getElementById("hosts").innerText = totalHosts;
+
+  let defaultCidr = (getClass(ip) === "A") ? 8 :
+                    (getClass(ip) === "B") ? 16 :
+                    (getClass(ip) === "C") ? 24 : cidr;
+
+  let subnetBits = cidr - defaultCidr;
+  let totalSubnets = Math.pow(2, subnetBits);
+
+  document.getElementById("subnets").innerText = totalSubnets;
+}
+
+// PRACTICE MODE
+let correctAnswer = "";
+
+function generateQuestion() {
+  let cidrList = [24, 25, 26, 27];
+  let cidr = cidrList[Math.floor(Math.random()*cidrList.length)];
+
+  correctAnswer = Math.pow(2, (32 - cidr)) - 2;
+
+  document.getElementById("question").innerText =
+    "How many hosts in /" + cidr + " ?";
+}
+
+function checkAnswer() {
+  let user = document.getElementById("answer").value;
+
+  if (user == correctAnswer) {
+    document.getElementById("result").innerText = "✅ Correct!";
+  } else {
+    document.getElementById("result").innerText =
+      "❌ Wrong! Answer: " + correctAnswer;
+  }
+}
+</script>
+
+</body>
+</html>

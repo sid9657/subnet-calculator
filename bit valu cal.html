@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Subnet Calculator</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    .box { margin: 10px; }
+  </style>
+</head>
+<body>
+
+<h2>Subnet Binary Calculator</h2>
+
+<div class="box">
+  <label><input type="checkbox" value="128">128</label>
+  <label><input type="checkbox" value="64">64</label>
+  <label><input type="checkbox" value="32">32</label>
+  <label><input type="checkbox" value="16">16</label>
+  <label><input type="checkbox" value="8">8</label>
+  <label><input type="checkbox" value="4">4</label>
+  <label><input type="checkbox" value="2">2</label>
+  <label><input type="checkbox" value="1">1</label>
+</div>
+
+<h3>Total: <span id="result">0</span></h3>
+
+<script>
+const boxes = document.querySelectorAll("input");
+const result = document.getElementById("result");
+
+boxes.forEach(box => {
+  box.addEventListener("change", () => {
+    let sum = 0;
+    boxes.forEach(b => {
+      if (b.checked) sum += parseInt(b.value);
+    });
+    result.textContent = sum;
+  });
+});
+</script>
+
+</body>
+</html>
